@@ -8,8 +8,8 @@ from thsr_voice_reminder.thsr_api import ThsrApi
 
 
 class TimeChecking(Base):
-    # 10 minutes
-    UPDATE_API_INTERVAL = 10 * 60
+    # 30 minutes
+    UPDATE_API_INTERVAL = 30 * 60
 
     def __init__(self, args, sound):
         self.args = args
