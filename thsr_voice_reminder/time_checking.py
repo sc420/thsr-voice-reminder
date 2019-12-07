@@ -148,21 +148,21 @@ class TimeChecking(Base):
         m['before_min'] = target_train[where][when] - now_num
 
         m['orig_arrival_hour'] = self.get_hour(
-            target_train['orig']['arrival'])
+            target_train['orig']['arrival'], fixed=True)
         m['orig_arrival_min'] = self.get_minute(
-            target_train['orig']['arrival'])
+            target_train['orig']['arrival'], fixed=True)
         m['orig_departure_hour'] = self.get_hour(
-            target_train['orig']['departure'])
+            target_train['orig']['departure'], fixed=True)
         m['orig_departure_min'] = self.get_minute(
-            target_train['orig']['departure'])
+            target_train['orig']['departure'], fixed=True)
         m['dest_arrival_hour'] = self.get_hour(
-            target_train['dest']['arrival'])
+            target_train['dest']['arrival'], fixed=True)
         m['dest_arrival_min'] = self.get_minute(
-            target_train['dest']['arrival'])
+            target_train['dest']['arrival'], fixed=True)
         m['dest_departure_hour'] = self.get_hour(
-            target_train['dest']['departure'])
+            target_train['dest']['departure'], fixed=True)
         m['dest_departure_min'] = self.get_minute(
-            target_train['dest']['departure'])
+            target_train['dest']['departure'], fixed=True)
 
         m['min_to_orig_arrival'] = target_train['orig']['arrival'] - now_num
         m['min_to_orig_departure'] = target_train['orig']['departure'] - now_num
@@ -279,11 +279,19 @@ class TimeChecking(Base):
         minute = date.minute
         return self.hour_min_to_num(hour, minute)
 
-    def get_hour(self, time_num):
-        return time_num // 60
+    def get_hour(self, time_num, fixed=False):
+        hour = time_num // 60
+        if fixed:
+            return '{:02d}'.format(hour)
+        else:
+            return hour
 
-    def get_minute(self, time_num):
-        return time_num % 60
+    def get_minute(self, time_num, fixed=False):
+        minute = time_num % 60
+        if fixed:
+            return '{:02d}'.format(minute)
+        else:
+            return minute
 
     # --------------------------------------------------------------------------
     # Data Processing
