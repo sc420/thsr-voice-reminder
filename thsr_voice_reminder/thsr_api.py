@@ -15,6 +15,8 @@ class ThsrApi(Base):
 
     def init_api(self):
         if not self.has_init:
+            self.logger.info('Initialize API')
+
             self.init_auth()
             self.read_station()
 
@@ -43,14 +45,17 @@ class ThsrApi(Base):
             self.name_to_id[name_en] = station_id
             self.name_to_id[name_tw] = station_id
 
-    def read_timetable(self, station_from, station_to, date):
+    def read_timetable(self, station_orig, station_dest, date):
         # Map the station name to IDs
-        id_from = self.name_to_id.get(station_from, station_from)
-        id_to = self.name_to_id.get(station_to, station_to)
+        id_orig = self.name_to_id.get(station_orig, station_orig)
+        id_dest = self.name_to_id.get(station_dest, station_dest)
+
+        # Convert date to string (YYYY-MM-DD)
+        date_str = date.strftime('%Y-%m-%d')
 
         url = ('https://ptx.transportdata.tw'
                '/MOTC/v2/Rail/THSR/DailyTimetable/OD/{}/to/{}/{}').format(
-            id_from, id_to, date)
+            id_orig, id_dest, date_str)
         params = {'format': 'JSON'}
         timetable_list = self.get_data(url, params=params)
 
@@ -66,14 +71,15 @@ class ThsrApi(Base):
             dest_depart_time = dest_stop_time['DepartureTime']
 
             timetable.append({
-                'from': {
+                'orig': {
                     'arrival': orig_arrive_time,
                     'departure': orig_depart_time,
                 },
-                'to': {
+                'dest': {
                     'arrival': dest_arrive_time,
                     'departure': dest_depart_time,
                 },
+                '_api_obj': timetable_obj,
             })
 
         return timetable

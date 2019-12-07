@@ -15,9 +15,16 @@ class Voice(Base):
         # Create the logger
         self.logger = Base.create_logger('voice', verbose=self.args.verbose)
 
-    def make_voice(self, action):
-        self.play_voice('測試', 'zh-tw')
-        self.play_voice('This is a test', 'en')
+    def make_voice(self, actions):
+        for action in actions:
+            self.logger.info('Take action: {}'.format(action))
+
+            sound_before = action['sound_before']
+            message = action['voice']['message']
+            lang = action['voice']['lang']
+
+            self.sound.play_sound(sound_before)
+            self.play_voice(message, lang)
 
     def play_voice(self, message, lang):
         # Create a temporary file

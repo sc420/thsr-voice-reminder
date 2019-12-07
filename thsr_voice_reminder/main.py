@@ -45,20 +45,25 @@ class ThsrVoiceReminder(Base):
             time.sleep(10)
 
     def check_time_and_make_sound(self):
-        # Read the settings file
-        settings = self.read_settings()
+        try:
+            # Read the settings file
+            settings = self.read_settings()
 
-        # Update the settings
-        self.update_settings(settings)
-        self.sound.update_settings(settings)
-        self.time_checking.update_settings(settings)
-        self.voice.update_settings(settings)
+            # Update the settings
+            self.update_settings(settings)
+            self.sound.update_settings(settings)
+            self.time_checking.update_settings(settings)
+            self.voice.update_settings(settings)
 
-        # Check the time and get the action
-        action = self.time_checking.check_and_get_action()
+            # Check the time and get the actions
+            actions = self.time_checking.check_and_get_actions()
 
-        # Make the voice
-        self.voice.make_voice(action)
+            # Make the voice
+            self.voice.make_voice(actions)
+        except:
+            self.logger.exception('Unable to check time and make sound')
+            self.sound.notify_error()
+            raise
 
     def read_settings(self):
         with open(self.args.settings, 'r', encoding='utf8') as stream:

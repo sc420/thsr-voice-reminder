@@ -19,9 +19,7 @@ class Sound(Base):
         self.vlc_instance = vlc.Instance()
 
     def notify_error(self):
-        path = self.settings['error_handling']['sound']
-        self.play_sound(path)
-
+        self.play_sound('sound/Error Signal 2.mp3')
         self.play_sound('voices/error_occurred.mp3')
 
     def play_sound(self, path):
