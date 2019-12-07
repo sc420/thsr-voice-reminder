@@ -29,6 +29,8 @@ class ThsrApi(Base):
                            ' Chrome/74.0.3729.169 Safari/537.36')}
 
     def read_station(self):
+        self.logger.info('Read station')
+
         params = {'format': 'JSON'}
         station_list = self.get_data(
             'https://ptx.transportdata.tw/MOTC/v2/Rail/THSR/Station',
@@ -46,6 +48,9 @@ class ThsrApi(Base):
             self.name_to_id[name_tw] = station_id
 
     def read_timetable(self, station_orig, station_dest, date):
+        self.logger.info('Read timetable, orig: {}, dest: {}, date: {}'.format(
+            station_orig, station_dest, date))
+
         # Map the station name to IDs
         id_orig = self.name_to_id.get(station_orig, station_orig)
         id_dest = self.name_to_id.get(station_dest, station_dest)
@@ -85,6 +90,8 @@ class ThsrApi(Base):
         return timetable
 
     def read_alert_info(self):
+        self.logger.info('Read alert info')
+
         params = {'format': 'JSON'}
         alert_list = self.get_data(
             'https://ptx.transportdata.tw/MOTC/v2/Rail/THSR/AlertInfo',
