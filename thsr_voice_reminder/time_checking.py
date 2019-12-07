@@ -55,14 +55,17 @@ class TimeChecking(Base):
 
             # Check train reminders
             for train in self.settings['trains']:
-                repeat = train['repeat']
+                enabled = train['enabled']
 
-                (weekday, short_weekday) = self.get_cur_weekday()
+                if enabled:
+                    repeat = train['repeat']
 
-                if weekday in repeat or short_weekday in repeat:
-                    action = self.check_reminder_time(train)
-                    if action is not None:
-                        actions.append(action)
+                    (weekday, short_weekday) = self.get_cur_weekday()
+
+                    if weekday in repeat or short_weekday in repeat:
+                        action = self.check_reminder_time(train)
+                        if action is not None:
+                            actions.append(action)
 
             # Check alert info
             alert_action = self.check_alert_info()
