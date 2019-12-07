@@ -1,0 +1,83 @@
+trains:
+- label: To Work
+  orig: Hsinchu
+  dest: Taipei
+  time: >-
+    08:00
+  target:
+    where: orig
+    when: arrival
+  enabled: True
+  repeat:
+  - Mon
+  - Tue
+  - Wed
+  - Thr
+  - Fri
+  reminders:
+  - before_min: 60
+    sound_before: sound/Success 04.mp3
+    voice:
+      message: >-
+        Please wake up, there are {before_min} minutes remaining
+        before the train arrives
+      lang: en
+  - before_min: 30
+    sound_before: sound/thsr_announcement.mp3
+    voice:
+      message: >-
+        各位旅客您好，{orig_departure_hour}點{orig_departure_min}分，
+        開往{dest_station_name_tw}、{train_number}次、
+        {direction_name_tw}列車即將在{min_to_orig_arrival}分鐘後進站，
+        請旅客前往第2月台搭乘，並且留意月台間隙，謝謝！
+      lang: zh-tw
+- label: To Gym
+  orig: Hsinchu
+  dest: Banciao
+  time: >-
+    15:00
+  target:
+    where: orig
+    when: arrival
+  enabled: True
+  repeat:
+  - Sat
+  reminders:
+  - before_min: 90
+    sound_before: sound/Success 04.mp3
+    voice:
+      message: >-
+        Please wake up, there are {before_min} minutes remaining
+        before the train arrives
+      lang: en
+  - before_min: 30
+    sound_before: sound/thsr_announcement.mp3
+    voice:
+      message: >-
+        各位旅客您好，{orig_departure_hour}點{orig_departure_min}分，
+        開往{dest_station_name_tw}、{train_number}次、
+        {direction_name_tw}列車即將在{min_to_orig_arrival}分鐘後進站，
+        請旅客前往第2月台搭乘，並且留意月台間隙，謝謝！
+      lang: zh-tw
+- label: Pick Up Someone
+  orig: Banciao
+  dest: Hsinchu
+  time: >-
+    22:00
+  target:
+    where: dest
+    when: arrival
+  enabled: False
+  repeat:
+  - Sat
+  - Sun
+  reminders:
+  - before_min: 10
+    sound_before: sound/Searching 02.mp3
+    voice:
+      message: >-
+        Please proceed to pick up someone from {dest_station_name} station
+      lang: en
+
+alert:
+  sound: sound/Beep warning.mp3

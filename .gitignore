@@ -3,9 +3,6 @@
 # Log directory
 logs
 
-# Settings directory
-settings
-
 # Created by https://www.gitignore.io/api/osx,linux,python,windows,visualstudiocode
 # Edit at https://www.gitignore.io/?templates=osx,linux,python,windows,visualstudiocode
 
