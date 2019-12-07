@@ -1,6 +1,6 @@
 # THSR Voice Reminder
 
-A Taiwan High Speed Rail (THSR) voice reminder.
+A [Taiwan High Speed Rail](https://www.thsrc.com.tw/index_en.html) (THSR) voice reminder.
 
 ## Features
 
