@@ -24,7 +24,8 @@ A [Taiwan High Speed Rail](https://www.thsrc.com.tw/index_en.html) (THSR) voice 
 
 ## Potential Problems
 
-Playing speech will block the thread which checks the reminders every 10 seconds. Don't use long text.
+* Playing speech will block the thread which checks the reminders every 10 seconds. Don't use long text.
+* Don't restart the program or call the API too often, MOTC Transport API has [rate limiting](https://ptxmotc.gitbooks.io/ptx-api-documentation/content/hui-yuan-shen-qing/membertype.html)
 
 ## References
 
