@@ -12,7 +12,7 @@ trains:
   - Mon
   - Tue
   - Wed
-  - Thr
+  - Thu
   - Fri
   reminders:
   - before_min: 60
