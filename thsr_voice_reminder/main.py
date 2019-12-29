@@ -4,85 +4,72 @@ import time
 import yaml
 
 from thsr_voice_reminder.base import Base
+from thsr_voice_reminder.main_controller import MainController
 from thsr_voice_reminder.sound import Sound
-from thsr_voice_reminder.time_checking import TimeChecking
 from thsr_voice_reminder.voice import Voice
 
 
 class ThsrVoiceReminder(Base):
+    def __init__(self):
+        self._args = self._parse_args()
+
+        super().__init__(self, self._args)
+
     def run(self):
-        self.args = self.parse_args()
+        self._sound = Sound(self._args)
+        self._main_controller = MainController(self._args)
+        self._voice = Voice(self._args, self._sound)
 
-        self.logger = Base.create_logger('main', verbose=self.args.verbose)
+        self._run_forever()
 
-        self.sound = Sound(self.args)
-
-        self.time_checking = TimeChecking(self.args, self.sound)
-        self.voice = Voice(self.args, self.sound)
-
-        self.run_forever()
-
-    def parse_args(self):
-        # Create an argument parser
+    def _parse_args(self):
         parser = argparse.ArgumentParser(description='Run THSR voice reminder')
 
-        # Add arguments
         parser.add_argument('--settings', type=str, help='Path of settings')
         parser.add_argument('--verbose', action='store_true',
                             help='Turn on verbose logging')
 
-        # Parse the arguments and return
         return parser.parse_args()
 
-    def run_forever(self):
-        self.logger.info('Start running forever')
+    def _run_forever(self):
+        self._logger.info('Start running forever')
 
         while True:
-            # Check the time and make sound
-            self.check_time_and_make_sound()
-
-            # Sleep for 10 seconds
+            self._check_time_and_make_sound()
             time.sleep(10)
 
-    def check_time_and_make_sound(self):
+    def _check_time_and_make_sound(self):
         try:
-            # Read the settings file
-            settings = self.read_settings()
+            settings = self._read_settings()
 
-            # Update the settings
             self.update_settings(settings)
-            self.sound.update_settings(settings)
-            self.time_checking.update_settings(settings)
-            self.voice.update_settings(settings)
+            self._sound.update_settings(settings)
+            self._main_controller.update_settings(settings)
+            self._voice.update_settings(settings)
 
-            # Check the time and get the actions
-            actions = self.time_checking.check_and_get_actions()
+            actions = self._main_controller.run_and_get_actions()
 
-            # Make the voice
-            self.voice.make_voice(actions)
+            self._voice.make_voice(actions)
         except:
-            self.logger.exception('Unable to check time and make sound')
-            self.sound.notify_error()
+            self._logger.exception('Unable to check time and make sound')
+            self._sound.notify_error()
             raise
 
-    def read_settings(self):
-        with open(self.args.settings, 'r', encoding='utf8') as stream:
+    def _read_settings(self):
+        with open(self._args.settings, 'r', encoding='utf-8') as stream:
             try:
                 settings = yaml.safe_load(stream)
             except yaml.YAMLError:
-                self.logger.exception('Unable to read the settings file')
+                self._logger.exception('Unable to read the settings file')
                 raise
 
             return settings
 
 
 def main():
-    # Create a voice reminder
     reminder = ThsrVoiceReminder()
-
-    # Run the reminder
     reminder.run()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

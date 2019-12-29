@@ -3,12 +3,15 @@ import pathlib
 
 
 class Base:
-    def __init__(self):
-        self.args = {}
-        self.settings = None
+    def __init__(self, child_class, args):
+        child_class_name = type(child_class).__name__
+        self._logger = Base.create_logger(
+            child_class_name, verbose=args.verbose)
+        self._args = args
+        self._settings = None
 
     def update_settings(self, settings):
-        self.settings = settings
+        self._settings = settings
 
     @staticmethod
     def create_logger(name, verbose=False):
@@ -31,7 +34,7 @@ class Base:
         parent_obj.mkdir(parents=True, exist_ok=True)
 
         # Create a file handler
-        fh = logging.FileHandler(path, mode='w')
+        fh = logging.FileHandler(path, mode='w', encoding='utf-8')
         fh.setLevel(level)
 
         # Create a console handler
@@ -40,7 +43,7 @@ class Base:
 
         # Create a formatter and add it to the handlers
         formatter = logging.Formatter(
-            '%(asctime)-15s %(name)-5s %(levelname)-7s: %(message)s')
+            '%(asctime)-15s %(name)s %(levelname)-7s: %(message)s')
         fh.setFormatter(formatter)
         ch.setFormatter(formatter)
 

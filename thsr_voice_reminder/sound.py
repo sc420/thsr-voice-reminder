@@ -7,16 +7,9 @@ from thsr_voice_reminder.base import Base
 
 class Sound(Base):
     def __init__(self, args):
-        # Save the arguments
-        self.args = args
+        super().__init__(self, args)
 
-        # Create the logger
-        self.logger = Base.create_logger('sound', verbose=self.args.verbose)
-
-        self.init_vlc()
-
-    def init_vlc(self):
-        self.vlc_instance = vlc.Instance()
+        self._init_vlc()
 
     def notify_error(self):
         self.play_sound('sound/Error Signal 2.mp3')
@@ -37,5 +30,8 @@ class Sound(Base):
             # Sleep for extra 1 second
             time.sleep(1)
         except:
-            self.logger.exception('Unable to play the sound')
+            self._logger.exception('Unable to play the sound')
             raise
+
+    def _init_vlc(self):
+        self.vlc_instance = vlc.Instance()
