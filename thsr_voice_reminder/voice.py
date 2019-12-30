@@ -1,4 +1,3 @@
-import os
 import tempfile
 
 from gtts import gTTS
@@ -31,11 +30,8 @@ class Voice(Base):
         tts = gTTS(message, lang=lang)
         tts.save(f.name)
 
-        # Play the speech
-        self._sound.play_sound(f.name)
-
         # Close the temporary file
         f.close()
 
-        # Remove the temporary file
-        os.unlink(f.name)
+        # Play the speech
+        self._sound.play_sound_and_delete(f.name)

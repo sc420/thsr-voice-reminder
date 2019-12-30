@@ -5,7 +5,7 @@ class Train:
     def __init__(self, api_obj):
         self._api_obj = api_obj
 
-    def get_occasion(self, where, when):
+    def get_occasion(self, occasion_target):
         occasion = {
             'orig': {
                 'arrival': self.get_orig_arrival_time(),
@@ -17,6 +17,7 @@ class Train:
             },
         }
 
+        (where, when) = occasion_target
         occasion_where = occasion.get(where, None)
         if not occasion_where:
             raise ValueError('Unknown target where "{}"'.format(where))
@@ -25,8 +26,8 @@ class Train:
             raise ValueError('Unknown target when "{}"'.format(when))
         return occasion_when
 
-    def get_occasion_num(self, where, when):
-        occassion = self.get_occasion(where, when)
+    def get_occasion_num(self, occasion_target):
+        occassion = self.get_occasion(occasion_target)
         return TimeUtils.time_to_num(occassion)
 
     def get_daily_direction(self):

@@ -72,7 +72,7 @@ class ThsrApi(Base):
         return alert_info
 
     def _init_auth(self):
-        self.headers = {
+        self._headers = {
             'User-Agent': ('Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
                            ' AppleWebKit/537.36 (KHTML, like Gecko)'
                            ' Chrome/74.0.3729.169 Safari/537.36')}
@@ -99,7 +99,7 @@ class ThsrApi(Base):
 
     def _get_data(self, url, params={}):
         try:
-            r = requests.get(url, headers=self.headers, params=params)
+            r = requests.get(url, headers=self._headers, params=params)
             r.raise_for_status()
             text = r.text
             return json.loads(text)

@@ -1,7 +1,6 @@
 import datetime
 
 from thsr_voice_reminder.base import Base
-from thsr_voice_reminder.thsr_api import ThsrApi
 from thsr_voice_reminder.time_utils import TimeUtils
 
 
@@ -9,20 +8,19 @@ class ActionGenerator(Base):
     def __init__(self, args):
         super().__init__(self, args)
 
-    def generate_reminder_action(self, train_settings, target_train, reminder):
+    def generate_reminder_action(self, schedule_item, target_train, reminder):
         self._logger.debug(
-            'train_settings={}, target_train={}, reminder={}'.format(
-                train_settings, target_train, reminder))
+            'schedule_item={}, target_train={}, reminder={}'.format(
+                schedule_item, target_train, reminder))
 
         m = {}
 
-        where = train_settings['target']['where']
-        when = train_settings['target']['when']
+        occasion_target = schedule_item.get_occasion_target()
 
         now_num = TimeUtils.get_cur_time_num()
 
         m['before_min'] = TimeUtils.calc_time_diff(
-            target_train.get_occasion(where, when), now_num)
+            target_train.get_occasion(occasion_target), now_num)
 
         m['orig_arrival_hour'] = TimeUtils.get_hour(
             target_train.get_orig_arrival_time(), fixed=True)
@@ -64,10 +62,10 @@ class ActionGenerator(Base):
         m['dest_station_name_tw'] = dest_station_name['Zh_tw']
 
         return {
-            'sound_before': reminder['sound_before'],
+            'sound_before': reminder.get_sound_before(),
             'voice': {
-                'message': reminder['voice']['message'].format_map(m),
-                'lang': reminder['voice']['lang'],
+                'message': reminder.get_formatted_voice_message(m),
+                'lang': reminder.get_voice_lang(),
             },
         }
 
@@ -88,7 +86,7 @@ class ActionGenerator(Base):
             ])
 
         return {
-            'sound_before': self._settings['alert']['sound'],
+            'sound_before': self._settings.get_alert_sound(),
             'voice': {
                 'message': message,
                 'lang': 'zh-tw',

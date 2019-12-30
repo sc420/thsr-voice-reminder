@@ -17,8 +17,13 @@ class MainController(Base):
 
         self._init_settings_state()
         self._init_stations_set()
+        self._init_remind_state()
         self._init_log_state()
         self._init_error_state()
+
+    def update_settings(self, settings):
+        super().update_settings(settings)
+        self._action_generator.update_settings(settings)
 
     def run_and_get_actions(self):
         self._logger.info('Run and get actions')
@@ -39,6 +44,9 @@ class MainController(Base):
     def _init_stations_set(self):
         self._stations_set = None
 
+    def _init_remind_state(self):
+        self._last_remind_time = {}
+
     def _init_log_state(self):
         self._last_targets = None
 
@@ -58,8 +66,8 @@ class MainController(Base):
             return
 
         new_stations_set = set()
-        for train_settings in self._settings['trains']:
-            orig_and_dest = (train_settings['orig'], train_settings['dest'])
+        for schedule_item in self._settings.iterate_schedule_items():
+            orig_and_dest = schedule_item.get_orig_dest()
             new_stations_set.add(orig_and_dest)
 
         self._stations_set = new_stations_set
@@ -84,11 +92,11 @@ class MainController(Base):
     def _generate_reminder_actions(self):
         actions = []
         targets = []
-        for train_settings in self._settings['trains']:
-            if self._check_active_target(train_settings):
-                target = self._find_train_to_remind(train_settings)
+        for schedule_item in self._settings.iterate_schedule_items():
+            if self._check_active_target(schedule_item):
+                target = self._find_train_to_remind(schedule_item)
                 targets.append(target)
-                action = self._check_reminder_time(train_settings, target)
+                action = self._check_reminder_time(schedule_item, target)
                 if action is not None:
                     actions.append(action)
 
@@ -96,25 +104,25 @@ class MainController(Base):
 
         return actions
 
-    def _check_active_target(self, train_settings):
-        if train_settings['enabled']:
-            repeat = train_settings['repeat']
+    def _check_active_target(self, schedule_item):
+        if schedule_item.is_enabled():
+            repeat = schedule_item.get_repeat()
             return TimeUtils.check_active_weekday(repeat)
         else:
             return False
 
-    def _find_train_to_remind(self, train_settings):
-        orig_and_dest = (train_settings['orig'], train_settings['dest'])
-        remind_time = train_settings['time']
-        where = train_settings['target']['where']
-        when = train_settings['target']['when']
+    def _find_train_to_remind(self, schedule_item):
+        orig_and_dest = schedule_item.get_orig_dest()
+        remind_time = schedule_item.get_time()
+        occasion_target = schedule_item.get_occasion_target()
 
         # Sort the timetable based on where and when
         trains = self._api_controller.get_timetable(orig_and_dest)
-        sorted_timetable = self._sort_timetable(trains, where, when)
+        sorted_timetable = self._sort_timetable(trains, occasion_target)
 
         # Extract the times
-        extracted_times = self._extract_times(sorted_timetable, where, when)
+        extracted_times = self._extract_times(
+            sorted_timetable, occasion_target)
 
         # Find the latest train to remind
         remind_index = self._find_latest_train(remind_time, extracted_times)
@@ -125,17 +133,53 @@ class MainController(Base):
         else:
             return None
 
-    def _check_reminder_time(self, train_settings, target):
+    def _check_reminder_time(self, schedule_item, target):
         if target is None:
             return None
 
         (target_train, target_time) = target
 
         # Check each reminder
-        for reminder in train_settings['reminders']:
-            if self._is_time_to_remind(target_time, reminder):
+        for reminder in schedule_item.iterate_reminders():
+            remind_key = (schedule_item.get_index(), reminder.get_index())
+            if ((not self._has_reminded(remind_key, reminder))
+                    and self._is_time_to_remind(target_time, reminder)):
+                self._update_last_remind_time(remind_key)
                 return self._action_generator.generate_reminder_action(
-                    train_settings, target_train, reminder)
+                    schedule_item, target_train, reminder)
+
+    def _find_latest_train(self, remind_time, extracted_times):
+        time_num = TimeUtils.time_to_num(remind_time)
+
+        # Search the latest train
+        return self._binary_search(extracted_times, time_num)
+
+    def _has_reminded(self, remind_key, reminder):
+        if self._has_settings_changed:
+            return False
+
+        now_num = TimeUtils.get_cur_time_num()
+        (first_remind_time, last_remind_time) = reminder.get_remind_time_range(
+            now_num)
+        last_time = self._last_remind_time.get(remind_key, None)
+        if last_time is None:
+            return False
+        else:
+            return (first_remind_time <= last_time
+                    and last_time <= last_remind_time)
+
+    def _is_time_to_remind(self, target_time, reminder):
+        now_num = TimeUtils.get_cur_time_num()
+        (first_remind_time, last_remind_time) = reminder.get_remind_time_range(
+            target_time)
+        self._logger.debug(
+            'now_num={}, first_remind_time={}, last_remind_time={}'.format(
+                now_num, first_remind_time, last_remind_time))
+        return first_remind_time <= now_num and now_num <= last_remind_time
+
+    def _update_last_remind_time(self, remind_key):
+        now_num = TimeUtils.get_cur_time_num()
+        self._last_remind_time[remind_key] = now_num
 
     def _log_trains_to_remind(self, targets):
         if targets != self._last_targets:
@@ -144,19 +188,6 @@ class MainController(Base):
                 self._logger.info(
                     'Train to remind: ...\n{}'.format(target_train))
             self._last_targets = targets
-
-    def _find_latest_train(self, remind_time, extracted_times):
-        time_num = TimeUtils.time_to_num(remind_time)
-
-        # Search the latest train
-        return self._binary_search(extracted_times, time_num)
-
-    def _is_time_to_remind(self, target_time, reminder):
-        now_num = TimeUtils.get_cur_time_num()
-        reminder_time = target_time - reminder['before_min']
-        self._logger.debug(
-            'now_num={}, reminder_time={}'.format(now_num, reminder_time))
-        return now_num == reminder_time
 
     def _generate_alert_info(self):
         actions = []
@@ -172,11 +203,11 @@ class MainController(Base):
         else:
             return None
 
-    def _sort_timetable(self, trains, where, when):
-        return sorted(trains, key=lambda t: t.get_occasion_num(where, when))
+    def _sort_timetable(self, trains, occasion_target):
+        return sorted(trains, key=lambda t: t.get_occasion_num(occasion_target))
 
-    def _extract_times(self, trains, where, when):
-        return list(map(lambda t: t.get_occasion_num(where, when), trains))
+    def _extract_times(self, trains, occasion_target):
+        return list(map(lambda t: t.get_occasion_num(occasion_target), trains))
 
     def _binary_search(self, lst, elem):
         """

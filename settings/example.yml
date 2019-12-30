@@ -1,4 +1,4 @@
-trains:
+schedule:
 - label: To Work
   orig: Hsinchu
   dest: Taipei

@@ -1,8 +1,7 @@
 import argparse
 import time
 
-import yaml
-
+from thsr_voice_reminder.app_settings import AppSettings
 from thsr_voice_reminder.base import Base
 from thsr_voice_reminder.main_controller import MainController
 from thsr_voice_reminder.sound import Sound
@@ -16,8 +15,9 @@ class ThsrVoiceReminder(Base):
         super().__init__(self, self._args)
 
     def run(self):
-        self._sound = Sound(self._args)
+        self._app_settings = AppSettings(self._args)
         self._main_controller = MainController(self._args)
+        self._sound = Sound(self._args)
         self._voice = Voice(self._args, self._sound)
 
         self._run_forever()
@@ -36,16 +36,13 @@ class ThsrVoiceReminder(Base):
 
         while True:
             self._check_time_and_make_sound()
+
             time.sleep(10)
 
     def _check_time_and_make_sound(self):
         try:
-            settings = self._read_settings()
-
-            self.update_settings(settings)
-            self._sound.update_settings(settings)
-            self._main_controller.update_settings(settings)
-            self._voice.update_settings(settings)
+            self._app_settings.load()
+            self._main_controller.update_settings(self._app_settings)
 
             actions = self._main_controller.run_and_get_actions()
 
@@ -54,16 +51,6 @@ class ThsrVoiceReminder(Base):
             self._logger.exception('Unable to check time and make sound')
             self._sound.notify_error()
             raise
-
-    def _read_settings(self):
-        with open(self._args.settings, 'r', encoding='utf-8') as stream:
-            try:
-                settings = yaml.safe_load(stream)
-            except yaml.YAMLError:
-                self._logger.exception('Unable to read the settings file')
-                raise
-
-            return settings
 
 
 def main():
