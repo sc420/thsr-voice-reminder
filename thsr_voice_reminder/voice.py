@@ -13,7 +13,7 @@ class Voice(Base):
 
     def make_voice(self, actions):
         for action in actions:
-            self._logger.info('Take action: {}'.format(action))
+            self._logger.info('Make voice: {}'.format(action))
 
             sound_before = action['sound_before']
             message = action['voice']['message']

@@ -96,9 +96,9 @@ class MainController(Base):
             if self._check_active_target(schedule_item):
                 target = self._find_train_to_remind(schedule_item)
                 targets.append(target)
-                action = self._check_reminder_time(schedule_item, target)
-                if action is not None:
-                    actions.append(action)
+                reminders_actions = self._check_reminder_time(
+                    schedule_item, target)
+                actions.extend(reminders_actions)
 
         self._log_trains_to_remind(targets)
 
@@ -106,8 +106,8 @@ class MainController(Base):
 
     def _check_active_target(self, schedule_item):
         if schedule_item.is_enabled():
-            repeat = schedule_item.get_repeat()
-            return TimeUtils.check_active_weekday(repeat)
+            active_weekday = schedule_item.get_active_weekday()
+            return TimeUtils.check_active_weekday(active_weekday)
         else:
             return False
 
@@ -140,13 +140,17 @@ class MainController(Base):
         (target_train, target_time) = target
 
         # Check each reminder
+        reminders_actions = []
         for reminder in schedule_item.iterate_reminders():
             remind_key = (schedule_item.get_index(), reminder.get_index())
             if ((not self._has_reminded(target_time, remind_key, reminder))
                     and self._is_time_to_remind(target_time, reminder)):
                 self._update_last_remind_time(remind_key)
-                return self._action_generator.generate_reminder_action(
+                action = self._action_generator.generate_reminder_action(
                     schedule_item, target_train, reminder)
+                reminder_actions = [action] * reminder.get_repeat()
+                reminders_actions.extend(reminder_actions)
+        return reminders_actions
 
     def _find_latest_train(self, remind_time, extracted_times):
         time_num = TimeUtils.time_to_num(remind_time)
@@ -156,6 +160,7 @@ class MainController(Base):
 
     def _has_reminded(self, target_time, remind_key, reminder):
         if self._has_settings_changed:
+            self._last_remind_time = {}
             return False
 
         (first_remind_time, last_remind_time) = reminder.get_remind_time_range(

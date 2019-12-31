@@ -64,8 +64,8 @@ class ScheduleItem:
     def is_enabled(self):
         return self._obj['enabled']
 
-    def get_repeat(self):
-        return self._obj['repeat']
+    def get_active_weekday(self):
+        return self._obj['active_weekday']
 
     def get_reminders(self):
         return self._reminders
@@ -98,6 +98,9 @@ class Reminder:
         first_remind_time = target_time - first_before_min
         last_remind_time = target_time - last_before_min
         return (first_remind_time, last_remind_time)
+
+    def get_repeat(self):
+        return self._obj.get('repeat', 1)
 
     def get_sound_before(self):
         return self._obj.get('sound_before', None)

@@ -10,11 +10,11 @@ class TimeUtils:
         return time_num1 - time_num2
 
     @staticmethod
-    def check_active_weekday(repeat):
+    def check_active_weekday(active_weekday):
         date = datetime.datetime.today()
         full_weekday = date.strftime('%A')
         short_weekday = date.strftime('%a')
-        return full_weekday in repeat or short_weekday in repeat
+        return full_weekday in active_weekday or short_weekday in active_weekday
 
     @staticmethod
     def get_cur_time_num():

@@ -5,24 +5,33 @@ schedule:
   time: >-
     08:00
   target:
+    # Either "orig" or "dest"
     where: orig
+    # Either "arrival" or "departure"
     when: arrival
   enabled: True
-  repeat:
+  active_weekday:
   - Mon
   - Tue
   - Wed
   - Thu
   - Fri
   reminders:
+  # This reminder will be activated once when the current time is 30-60 minutes
+  # before the train arrives
   - before_min: 60
+    last_before_min: 30
+    repeat: 2
     sound_before: sound/Success 04.mp3
     voice:
       message: >-
         Please wake up, there are {before_min} minutes remaining
         before the train arrives
       lang: en
+  # This reminder will be activated once when the current time is 0-30 minutes
+  # before the train arrives
   - before_min: 30
+    repeat: 2
     sound_before: sound/thsr_announcement.mp3
     voice:
       message: >-
@@ -40,10 +49,11 @@ schedule:
     where: orig
     when: arrival
   enabled: True
-  repeat:
+  active_weekday:
   - Sat
   reminders:
   - before_min: 90
+    repeat: 2
     sound_before: sound/Success 04.mp3
     voice:
       message: >-
@@ -51,6 +61,7 @@ schedule:
         before the train arrives
       lang: en
   - before_min: 30
+    repeat: 2
     sound_before: sound/thsr_announcement.mp3
     voice:
       message: >-
@@ -68,7 +79,7 @@ schedule:
     where: dest
     when: arrival
   enabled: False
-  repeat:
+  active_weekday:
   - Sat
   - Sun
   reminders:
