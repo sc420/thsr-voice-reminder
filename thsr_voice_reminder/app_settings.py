@@ -7,17 +7,7 @@ class AppSettings(Base):
     def __init__(self, args):
         super().__init__(self, args)
 
-        self.load()
-
-    def load(self):
-        with open(self._args.settings, 'r', encoding='utf-8') as stream:
-            try:
-                self._settings = yaml.safe_load(stream)
-
-                self._build_schedule_items()
-            except yaml.YAMLError:
-                self._logger.exception('Unable to read the settings file')
-                raise
+        self._load()
 
     def iterate_schedule_items(self):
         for schedule_item in self._schedule_items:
@@ -27,6 +17,16 @@ class AppSettings(Base):
         alert = self._settings.get('alert', {})
         return alert.get('sound', None)
 
+    def _load(self):
+        with open(self._args.settings, 'r', encoding='utf-8') as stream:
+            try:
+                self._settings = yaml.safe_load(stream)
+
+                self._build_schedule_items()
+            except yaml.YAMLError:
+                self._logger.exception('Unable to read the settings file')
+                raise
+
     def _build_schedule_items(self):
         obj_list = self._settings.get('schedule', [])
         self._schedule_items = [ScheduleItem(index, obj)
@@ -35,7 +35,6 @@ class AppSettings(Base):
     def __eq__(self, other):
         if other is None:
             return False
-
         return self._schedule_items == other._schedule_items
 
 
@@ -79,8 +78,7 @@ class ScheduleItem:
     def __eq__(self, other):
         if other is None:
             return False
-
-        return self._obj == other._obj and self._reminders == other._reminders
+        return self._obj == other._obj
 
     def __str__(self):
         return 'obj={}, reminders={}'.format(self._obj, self._reminders)
@@ -119,7 +117,6 @@ class Reminder:
     def __eq__(self, other):
         if other is None:
             return False
-
         return self._obj == other._obj
 
     def __str__(self):

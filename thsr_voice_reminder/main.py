@@ -15,7 +15,6 @@ class ThsrVoiceReminder(Base):
         super().__init__(self, self._args)
 
     def run(self):
-        self._app_settings = AppSettings(self._args)
         self._main_controller = MainController(self._args)
         self._sound = Sound(self._args)
         self._voice = Voice(self._args, self._sound)
@@ -41,7 +40,7 @@ class ThsrVoiceReminder(Base):
 
     def _check_time_and_make_sound(self):
         try:
-            self._app_settings.load()
+            self._app_settings = AppSettings(self._args)
             self._main_controller.update_settings(self._app_settings)
 
             actions = self._main_controller.run_and_get_actions()

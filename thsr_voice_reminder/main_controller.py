@@ -142,7 +142,7 @@ class MainController(Base):
         # Check each reminder
         for reminder in schedule_item.iterate_reminders():
             remind_key = (schedule_item.get_index(), reminder.get_index())
-            if ((not self._has_reminded(remind_key, reminder))
+            if ((not self._has_reminded(target_time, remind_key, reminder))
                     and self._is_time_to_remind(target_time, reminder)):
                 self._update_last_remind_time(remind_key)
                 return self._action_generator.generate_reminder_action(
@@ -154,13 +154,12 @@ class MainController(Base):
         # Search the latest train
         return self._binary_search(extracted_times, time_num)
 
-    def _has_reminded(self, remind_key, reminder):
+    def _has_reminded(self, target_time, remind_key, reminder):
         if self._has_settings_changed:
             return False
 
-        now_num = TimeUtils.get_cur_time_num()
         (first_remind_time, last_remind_time) = reminder.get_remind_time_range(
-            now_num)
+            target_time)
         last_time = self._last_remind_time.get(remind_key, None)
         if last_time is None:
             return False
