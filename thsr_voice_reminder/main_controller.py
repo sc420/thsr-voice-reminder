@@ -29,6 +29,7 @@ class MainController(Base):
         self._logger.info('Run and get actions')
 
         self._check_settings_changes()
+        self._reset_states_when_settings_changes()
         self._update_stations_set()
         if not self._try_update_api():
             return []
@@ -60,6 +61,10 @@ class MainController(Base):
             self._logger.info('The settings have been changed')
             self._last_settings = self._settings
             self._has_settings_changed = True
+
+    def _reset_states_when_settings_changes(self):
+        if self._has_settings_changed:
+            self._last_remind_time = {}
 
     def _update_stations_set(self):
         if not self._has_settings_changed:
@@ -160,7 +165,6 @@ class MainController(Base):
 
     def _has_reminded(self, target_time, remind_key, reminder):
         if self._has_settings_changed:
-            self._last_remind_time = {}
             return False
 
         (first_remind_time, last_remind_time) = reminder.get_remind_time_range(
