@@ -7,7 +7,10 @@ class AppSettings(Base):
     def __init__(self, args):
         super().__init__(self, args)
 
-        self._load()
+        self._init_settings_state()
+
+    def has_settings_changed(self):
+        return self._has_settings_changed
 
     def iterate_schedule_items(self):
         for schedule_item in self._schedule_items:
@@ -17,15 +20,26 @@ class AppSettings(Base):
         alert = self._settings.get('alert', {})
         return alert.get('sound', None)
 
-    def _load(self):
+    def load(self):
         with open(self._args.settings, 'r', encoding='utf-8') as stream:
             try:
                 self._settings = yaml.safe_load(stream)
-
-                self._build_schedule_items()
             except yaml.YAMLError:
                 self._logger.exception('Unable to read the settings file')
                 raise
+
+        self._update_settings_change()
+        self._build_schedule_items()
+
+    def _init_settings_state(self):
+        self._last_settings = None
+        self._has_settings_changed = False
+
+    def _update_settings_change(self):
+        self._has_settings_changed = (self._settings != self._last_settings)
+        if self._has_settings_changed:
+            self._logger.info('The settings have been changed')
+        self._last_settings = self._settings
 
     def _build_schedule_items(self):
         obj_list = self._settings.get('schedule', [])

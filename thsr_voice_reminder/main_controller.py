@@ -9,26 +9,22 @@ from thsr_voice_reminder.time_utils import TimeUtils
 class MainController(Base):
     MAX_NUM_ERRORS = 6
 
-    def __init__(self, args):
+    def __init__(self, args, app_settings):
         super().__init__(self, args)
+
+        self._app_settings = app_settings
 
         self._action_generator = ActionGenerator(self._args)
         self._api_controller = ApiController(self._args)
 
-        self._init_settings_state()
         self._init_stations_set()
         self._init_remind_state()
         self._init_log_state()
         self._init_error_state()
 
-    def update_settings(self, settings):
-        super().update_settings(settings)
-        self._action_generator.update_settings(settings)
-
     def run_and_get_actions(self):
         self._logger.info('Run and get actions')
 
-        self._check_settings_changes()
         self._reset_states_when_settings_changes()
         self._update_stations_set()
         if not self._try_update_api():
@@ -37,10 +33,6 @@ class MainController(Base):
         reminder_actions = self._generate_reminder_actions()
         alert_actions = self._generate_alert_info()
         return reminder_actions + alert_actions
-
-    def _init_settings_state(self):
-        self._last_settings = None
-        self._has_settings_changed = False
 
     def _init_stations_set(self):
         self._stations_set = None
@@ -54,24 +46,16 @@ class MainController(Base):
     def _init_error_state(self):
         self._num_errors = 0
 
-    def _check_settings_changes(self):
-        if self._settings == self._last_settings:
-            self._has_settings_changed = False
-        else:
-            self._logger.info('The settings have been changed')
-            self._last_settings = self._settings
-            self._has_settings_changed = True
-
     def _reset_states_when_settings_changes(self):
-        if self._has_settings_changed:
+        if self._app_settings.has_settings_changed():
             self._last_remind_time = {}
 
     def _update_stations_set(self):
-        if not self._has_settings_changed:
+        if not self._app_settings.has_settings_changed():
             return
 
         new_stations_set = set()
-        for schedule_item in self._settings.iterate_schedule_items():
+        for schedule_item in self._app_settings.iterate_schedule_items():
             orig_and_dest = schedule_item.get_orig_dest()
             new_stations_set.add(orig_and_dest)
 
@@ -97,7 +81,7 @@ class MainController(Base):
     def _generate_reminder_actions(self):
         actions = []
         targets = []
-        for schedule_item in self._settings.iterate_schedule_items():
+        for schedule_item in self._app_settings.iterate_schedule_items():
             if self._check_active_target(schedule_item):
                 target = self._find_train_to_remind(schedule_item)
                 targets.append(target)
@@ -164,7 +148,7 @@ class MainController(Base):
         return self._binary_search(extracted_times, time_num)
 
     def _has_reminded(self, target_time, remind_key, reminder):
-        if self._has_settings_changed:
+        if self._app_settings.has_settings_changed():
             return False
 
         (first_remind_time, last_remind_time) = reminder.get_remind_time_range(

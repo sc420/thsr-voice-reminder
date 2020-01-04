@@ -10,9 +10,6 @@ class Base:
         self._args = args
         self._settings = None
 
-    def update_settings(self, settings):
-        self._settings = settings
-
     @staticmethod
     def create_logger(name, verbose=False):
         # Set the logging level
