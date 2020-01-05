@@ -20,7 +20,7 @@ schedule:
   # This reminder will be activated once when the current time is 30-60 minutes
   # before the train arrives
   - before_min: 60
-    last_before_min: 30
+    last_before_min: 31
     repeat: 2
     sound_before: sound/Success 04.mp3
     voice:
