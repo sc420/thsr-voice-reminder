@@ -5,8 +5,10 @@ from thsr_voice_reminder.time_utils import TimeUtils
 
 
 class ActionGenerator(Base):
-    def __init__(self, args):
+    def __init__(self, args, app_settings):
         super().__init__(self, args)
+
+        self._app_settings = app_settings
 
     def generate_reminder_action(self, schedule_item, target_train, reminder):
         self._logger.debug(
@@ -77,7 +79,6 @@ class ActionGenerator(Base):
         for alert in alert_info:
             message += '。'.join([
                 '請注意高鐵有異常營運狀態',
-                '狀態: {}'.format(alert['status']),
                 '標題: {}'.format(alert['title']),
                 '描述: {}'.format(alert['description']),
                 '影響狀態: {}'.format(alert['effects']),
@@ -86,7 +87,7 @@ class ActionGenerator(Base):
             ])
 
         return {
-            'sound_before': self._settings.get_alert_sound(),
+            'sound_before': self._app_settings.get_alert_sound(),
             'voice': {
                 'message': message,
                 'lang': 'zh-tw',

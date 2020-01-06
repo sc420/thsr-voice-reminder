@@ -14,7 +14,8 @@ class MainController(Base):
 
         self._app_settings = app_settings
 
-        self._action_generator = ActionGenerator(self._args)
+        self._action_generator = ActionGenerator(
+            self._args, self._app_settings)
         self._api_controller = ApiController(self._args)
 
         self._init_stations_set()
