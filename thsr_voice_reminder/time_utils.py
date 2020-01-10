@@ -17,6 +17,10 @@ class TimeUtils:
         return full_weekday in active_weekday or short_weekday in active_weekday
 
     @staticmethod
+    def get_cur_date():
+        return datetime.datetime.today()
+
+    @staticmethod
     def get_cur_time_num():
         date = datetime.datetime.today()
         hour = date.hour

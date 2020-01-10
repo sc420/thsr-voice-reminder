@@ -154,11 +154,16 @@ class MainController(Base):
 
         (first_remind_time, last_remind_time) = reminder.get_remind_time_range(
             target_time)
-        last_time = self._last_remind_time.get(remind_key, None)
-        if last_time is None:
+
+        last_date = self._last_remind_time.get(remind_key, None)
+        if last_date is None:
             return False
         else:
-            return (first_remind_time <= last_time
+            cur_date = TimeUtils.get_cur_date()
+            last_time = TimeUtils.hour_min_to_num(
+                last_date.hour, last_date.minute)
+            return (last_date.date() == cur_date.date()
+                    and first_remind_time <= last_time
                     and last_time <= last_remind_time)
 
     def _is_time_to_remind(self, target_time, reminder):
@@ -171,8 +176,8 @@ class MainController(Base):
         return first_remind_time <= now_num and now_num <= last_remind_time
 
     def _update_last_remind_time(self, remind_key):
-        now_num = TimeUtils.get_cur_time_num()
-        self._last_remind_time[remind_key] = now_num
+        cur_date = TimeUtils.get_cur_date()
+        self._last_remind_time[remind_key] = cur_date
 
     def _log_trains_to_remind(self, targets):
         if targets != self._last_targets:
