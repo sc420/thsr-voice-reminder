@@ -19,8 +19,9 @@ class Voice(Base):
             message = action['voice']['message']
             lang = action['voice']['lang']
 
-            self._sound.play_sound(sound_before)
-            self.play_voice(message, lang)
+            if len(message) > 0:
+                self._sound.play_sound(sound_before)
+                self.play_voice(message, lang)
 
     def play_voice(self, message, lang):
         # Create a temporary file
