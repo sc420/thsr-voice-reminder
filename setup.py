@@ -150,7 +150,7 @@ setup(
     install_requires=[
         'gTTS==2.0.4',
         'python-vlc==3.0.7110',
-        'PyYAML==5.1.2',
+        'PyYAML==5.4',
         'requests==2.22.0',
     ],  # Optional
 
